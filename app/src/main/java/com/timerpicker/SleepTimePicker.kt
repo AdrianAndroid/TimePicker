@@ -189,14 +189,14 @@ class SleepTimePicker @JvmOverloads constructor(
         addView(wakeLayout)
         circleBounds = RectF()
 
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         setWillNotDraw(false)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        val measuredWidth = View.MeasureSpec.getSize(widthMeasureSpec)
-        val measuredHeight = View.MeasureSpec.getSize(heightMeasureSpec)
+        val measuredWidth = MeasureSpec.getSize(widthMeasureSpec)
+        val measuredHeight = MeasureSpec.getSize(heightMeasureSpec)
         measureChildren(widthMeasureSpec, heightMeasureSpec)
 
         val smallestSide = Math.min(measuredWidth, measuredHeight)
@@ -302,10 +302,10 @@ class SleepTimePicker @JvmOverloads constructor(
     }
 
     private fun calculateBounds(mWidth: Int, mHeight: Int) {
-        val maxChildWidth = max(sleepLayout.measuredWidth, wakeLayout.measuredWidth)
-        val maxChildHeight = max(sleepLayout.measuredHeight, wakeLayout.measuredHeight)
+        val maxChildWidth = 0 //max(sleepLayout.measuredWidth, wakeLayout.measuredWidth)
+        val maxChildHeight = 0 //max(sleepLayout.measuredHeight, wakeLayout.measuredHeight)
         val maxChildSize = max(maxChildWidth, maxChildHeight) // 正方形
-        val offset = abs(progressBackgroundPaint.strokeWidth / 2 - maxChildSize / 2)
+        val offset = progressBackgroundPaint.strokeWidth //progressBackgroundPaint.strokeWidth // abs(progressBackgroundPaint.strokeWidth / 2 - maxChildSize / 2)
         val width = mWidth - paddingStart - paddingEnd - maxChildSize - offset
         val height = mHeight - paddingTop - paddingBottom - maxChildSize - offset
         if (BuildConfig.DEBUG) {

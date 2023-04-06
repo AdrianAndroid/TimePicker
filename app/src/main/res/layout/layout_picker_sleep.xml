@@ -5,6 +5,4 @@
     android:layout_height="wrap_content"
     android:scaleType="center"
     android:src="@mipmap/icon_sleep_controller"
-    tools:ignore="ContentDescription">
-
-</ImageView>
+    tools:ignore="ContentDescription" />

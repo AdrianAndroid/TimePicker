@@ -6,6 +6,4 @@
     android:orientation="vertical"
     android:scaleType="center"
     android:src="@mipmap/icon_wakeup_controller"
-    tools:ignore="ContentDescription">
-
-</ImageView>
+    tools:ignore="ContentDescription" />
