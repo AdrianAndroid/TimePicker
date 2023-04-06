@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.graphics.alpha
 import org.threeten.bp.LocalTime
 import java.util.*
 import kotlin.math.*
@@ -51,8 +50,11 @@ class SleepTimePicker @JvmOverloads constructor(
     private lateinit var wakeLayout: View
     private var sleepAngle = 30.0 // 开始角度
     private var wakeAngle = 225.0 // 结束角度
+
+    private var onlyDisplay = false
     private var draggingSleep = false
     private var draggingWake = false
+
     private val stepMinutes = 15
     private val textRect = Rect()
 
@@ -122,6 +124,8 @@ class SleepTimePicker @JvmOverloads constructor(
 
             sleepLayoutId = a.getResourceId(R.styleable.SleepTimePicker_sleepLayoutId, 0)
             wakeLayoutId = a.getResourceId(R.styleable.SleepTimePicker_wakeLayoutId, 0)
+
+            onlyDisplay = a.getBoolean(R.styleable.SleepTimePicker_onlyDisplay, onlyDisplay)
 
             progressColor = a.getColor(R.styleable.SleepTimePicker_progressColor, progressColor)
             progressBackgroundColor =
@@ -237,6 +241,9 @@ class SleepTimePicker @JvmOverloads constructor(
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+        if (onlyDisplay) {
+            return super.onInterceptTouchEvent(ev)
+        }
         if (ev.action == MotionEvent.ACTION_DOWN) {
             if (isTouchOnView(sleepLayout, ev)) {
                 draggingSleep = true
@@ -252,6 +259,9 @@ class SleepTimePicker @JvmOverloads constructor(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent): Boolean {
+        if (onlyDisplay) {
+            return super.onTouchEvent(ev)
+        }
         val x = ev.x
         val y = ev.y
 

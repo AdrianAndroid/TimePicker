@@ -23,6 +23,7 @@
         app:divisionAlpha="125"
         app:divisionColor="#ff0000"
         app:labelColor="#00ff00"
+        app:onlyDisplay="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -31,8 +32,8 @@
         app:progressColor="#609BE6"
         app:progressDivisionAlpha="125"
         app:progressDivisionColor="@color/white"
-        app:progressStrokeWidth="@dimen/progressStrokeWidth"
         app:progressDivisionSpace="3dp"
+        app:progressStrokeWidth="@dimen/progressStrokeWidth"
         app:sleepLayoutId="@layout/layout_picker_sleep"
         app:wakeLayoutId="@layout/layout_picker_wake" />
 

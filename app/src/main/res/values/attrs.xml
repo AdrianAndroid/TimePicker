@@ -30,6 +30,8 @@
         <attr name="labelFont" format="reference" />
         <attr name="sleepLayoutId" format="reference" />
         <attr name="wakeLayoutId" format="reference" />
+        <!--仅展示,不操作-->
+        <attr name="onlyDisplay" format="boolean"/>
     </declare-styleable>
 
 </resources>
