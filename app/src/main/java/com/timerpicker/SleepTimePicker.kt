@@ -38,7 +38,7 @@ class SleepTimePicker @JvmOverloads constructor(
     private var labelOffset = 0
     private var divisionLength = 0
     private var divisionWidth = 0
-    private val hourLabels = listOf(12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+    private val hourLabels = listOf(0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22)
 
     private lateinit var circleBounds: RectF
 
@@ -239,7 +239,7 @@ class SleepTimePicker @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> {
                 val touchAngleRad = atan2(center.y - y, x - center.x).toDouble()
                 if (draggingSleep) {
-                    val sleepAngleRad = Math.toRadians(sleepAngle)
+                    val sleepAngleRad = Math.toRadians(sleepAngle) // 角度转弧度
                     val diff = Math.toDegrees(angleBetweenVectors(sleepAngleRad, touchAngleRad))
                     sleepAngle = to_0_720(sleepAngle + diff)
                     requestLayout()
@@ -263,8 +263,8 @@ class SleepTimePicker @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
-        drawProgressBackground(canvas)
-        drawProgress(canvas)
+        drawProgressBackground(canvas) // progress 的背景颜色
+        drawProgress(canvas) // progress 进度条
         drawDivisions(canvas)
     }
 
@@ -275,12 +275,12 @@ class SleepTimePicker @JvmOverloads constructor(
     }
 
     private fun computeBedTime(): LocalTime {
-        val bedMins = snapMinutes(angleToMins(sleepAngle), stepMinutes)
+        val bedMins: Int = snapMinutes(angleToMins(sleepAngle), stepMinutes)
         return LocalTime.of((bedMins / 60) % 24, bedMins % 60)
     }
 
     private fun computeWakeTime(): LocalTime {
-        val wakeMins = snapMinutes(angleToMins(wakeAngle), stepMinutes)
+        val wakeMins: Int = snapMinutes(angleToMins(wakeAngle), stepMinutes)
         return LocalTime.of((wakeMins / 60) % 24, wakeMins % 60)
     }
 
@@ -331,6 +331,7 @@ class SleepTimePicker @JvmOverloads constructor(
 
 
     private fun drawProgressBackground(canvas: Canvas) {
+        // oval, startAngle, sweepAngle, useCenter, paint
         canvas.drawArc(
             circleBounds, ANGLE_START_PROGRESS_BACKGROUND.toFloat(),
             ANGLE_END_PROGRESS_BACKGROUND.toFloat(),
@@ -340,7 +341,7 @@ class SleepTimePicker @JvmOverloads constructor(
 
     private fun drawProgress(canvas: Canvas) {
         val startAngle = -sleepAngle.toFloat()
-        val sweep = Utils.to_0_360(sleepAngle - wakeAngle).toFloat()
+        val sweep = Utils.to_0_360(sleepAngle - wakeAngle).toFloat() // 计算弧度
         progressBottomBlurPaint?.let {
             canvas.drawArc(circleBounds, startAngle, sweep, false, it)
         }

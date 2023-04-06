@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleUpdate(bedTime: LocalTime, wakeTime: LocalTime) {
-        val formatter = DateTimeFormatter.ofPattern("h:mm a", Locale.US)
+        val formatter = DateTimeFormatter.ofPattern("HH:mm a", Locale.US)
         tvBedTime.text = bedTime.format(formatter)
         tvWakeTime.text = wakeTime.format(formatter)
 
