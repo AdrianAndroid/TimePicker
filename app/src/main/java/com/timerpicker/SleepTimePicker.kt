@@ -34,8 +34,8 @@ class SleepTimePicker @JvmOverloads constructor(
     private var progressBottomBlurPaint: Paint? = null
     private lateinit var divisionPaint: Paint
     private lateinit var textPaint: Paint
-    private var divisionOffset = 0
-    private var labelOffset = 0
+    private var divisionOffset = 0 // 表的分隔条距离偏移角度
+    private var labelOffset = 0 // 文字的偏移角度
     private var divisionLength = 0
     private var divisionWidth = 0
     private val hourLabels = listOf(0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22)
@@ -57,7 +57,6 @@ class SleepTimePicker @JvmOverloads constructor(
     private var draggingWake = false
     private val stepMinutes = 15
     private val textRect = Rect()
-    private val calendar = Calendar.getInstance()
 
     var listener: ((bedTime: LocalTime, wakeTime: LocalTime) -> Unit)? = null
 
@@ -382,10 +381,10 @@ class SleepTimePicker @JvmOverloads constructor(
         private const val ANGLE_END_PROGRESS_BACKGROUND = 360
         private const val DEFAULT_STROKE_WIDTH_DP = 8F
         private const val DEFAULT_DIVISION_LENGTH_DP = 8F
-        private const val DEFAULT_DIVISION_OFFSET_DP = 12F
-        private const val DEFAULT_LABEL_OFFSET_DP = 36F
+        private const val DEFAULT_DIVISION_OFFSET_DP = 2F
+        private const val DEFAULT_LABEL_OFFSET_DP = 18F
         private const val DEFAULT_DIVISION_WIDTH_DP = 2F
-        private const val SCALE_LABEL_TEXT_SIZE = 13F
+        private const val SCALE_LABEL_TEXT_SIZE = 8F
         private const val DEFAULT_PROGRESS_BACKGROUND_COLOR = "#e0e0e0"
         private const val BLUR_STROKE_RATIO = 3 / 8F
         private const val BLUR_RADIUS_RATIO = 1 / 4F
