@@ -25,10 +25,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:progressBackgroundColor="#000"
+        app:progressBackgroundColor="#1E4369"
         app:progressBgStrokeWidth="28dp"
-        app:progressColor="@color/white"
-        app:progressStrokeWidth="28dp"
+        app:progressColor="#609BE6"
+        app:progressStrokeWidth="@dimen/progressStrokeWidth"
         app:sleepLayoutId="@layout/layout_picker_sleep"
         app:wakeLayoutId="@layout/layout_picker_wake"/>
 
