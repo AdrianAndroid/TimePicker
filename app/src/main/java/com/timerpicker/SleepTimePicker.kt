@@ -376,6 +376,9 @@ class SleepTimePicker @JvmOverloads constructor(
     private fun drawProgress(canvas: Canvas) {
         val startAngle = -sleepAngle.toFloat()
         val sweep = to_0_360(sleepAngle - wakeAngle).toFloat() // 计算弧度
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "drawProgress sweep=$sweep")
+        }
         progressBottomBlurPaint?.let {
             canvas.drawArc(circleBounds, startAngle, sweep, false, it)
         }
@@ -388,9 +391,12 @@ class SleepTimePicker @JvmOverloads constructor(
     private fun drawProgressDivisions(canvas: Canvas) {
         val startAngle = -sleepAngle + progressDivisionSpace
         val endAngle = -wakeAngle - progressDivisionSpace
-        val betweenAngles = to_0_360(endAngle - startAngle).toFloat() // 计算弧度
+        val betweenAngles = to_0_360(sleepAngle - wakeAngle).toFloat() - progressDivisionSpace * 2 // 计算弧度
         if (BuildConfig.DEBUG) {
-            Log.i(TAG, "drawProgressDivisions startAngle=$startAngle, endAngle=$endAngle betweenAngles=$betweenAngles")
+            Log.i(TAG, "drawProgressDivisions sleepAngle=$sleepAngle wakeAngle=$wakeAngle startAngle=$startAngle, endAngle=$endAngle betweenAngles=$betweenAngles")
+        }
+        if (betweenAngles < 2) {
+            return
         }
         val count: Int = (betweenAngles / 2).roundToInt()
         val subDivisionLength = progressStrokeWidth / 3
@@ -455,23 +461,23 @@ class SleepTimePicker @JvmOverloads constructor(
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, metrics).toInt()
     }
 
-    fun to_0_360(angle: Double): Double {
+    private fun to_0_360(angle: Double): Double {
         var result = angle % 360
         if (result < 0) result += 360
         return result
     }
 
-    fun to_0_720(angle: Double): Double {
+    private fun to_0_720(angle: Double): Double {
         var result = angle % 720
         if (result < 0) result += 720
         return result
     }
 
-    fun minutesToAngle(mins: Int): Double {
+    private fun minutesToAngle(mins: Int): Double {
         return to_0_720(90 - (mins / (12 * 60.0)) * 360.0)
     }
 
-    fun angleToMins(angle: Double): Int {
+    private fun angleToMins(angle: Double): Int {
         return (((to_0_720(90 - angle)) / 360) * 12 * 60).toInt()
     }
 
@@ -480,7 +486,7 @@ class SleepTimePicker @JvmOverloads constructor(
     @param angle2 - second angle in radians
     @return angle between vectors in radians
      **/
-    fun angleBetweenVectors(angle1: Double, angle2: Double): Double {
+    private fun angleBetweenVectors(angle1: Double, angle2: Double): Double {
         val x1 = cos(angle1)
         val y1 = sin(angle1)
         val x2 = cos(angle2)
@@ -496,11 +502,11 @@ class SleepTimePicker @JvmOverloads constructor(
         return (x1 * x2 + y1 * y2)
     }
 
-    fun vectorsAngleRad(x1: Double, y1: Double, x2: Double, y2: Double): Double {
+    private fun vectorsAngleRad(x1: Double, y1: Double, x2: Double, y2: Double): Double {
         return atan2(cross(x1, y1, x2, y2), dot(x1, y1, x2, y2))
     }
 
-    fun snapMinutes(minutes: Int, step: Int): Int {
+    private fun snapMinutes(minutes: Int, step: Int): Int {
         return (minutes / step) * step + (2 * (minutes % step) / step) * step
     }
 
