@@ -10,14 +10,10 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import com.timerpicker.Utils.Companion.angleBetweenVectors
-import com.timerpicker.Utils.Companion.angleToMins
-import com.timerpicker.Utils.Companion.snapMinutes
-import com.timerpicker.Utils.Companion.to_0_720
+import androidx.core.graphics.alpha
 import org.threeten.bp.LocalTime
 import java.util.*
 import kotlin.math.*
-
 
 class SleepTimePicker @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -32,11 +28,13 @@ class SleepTimePicker @JvmOverloads constructor(
     private var progressTopBlurPaint: Paint? = null
     private var progressBottomBlurPaint: Paint? = null
     private lateinit var divisionPaint: Paint
+    private lateinit var progressDivisionPaint: Paint
     private lateinit var textPaint: Paint
     private var divisionOffset = 0 // 表的分隔条距离偏移角度
     private var labelOffset = 0 // 文字的偏移角度
     private var divisionLength = 0
     private var divisionWidth = 0
+    private var progressDivisionWidth = 0
     private val hourLabels = listOf(0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22)
 
     private lateinit var circleBounds: RectF
@@ -45,13 +43,14 @@ class SleepTimePicker @JvmOverloads constructor(
     private var center = Point(0, 0)
     private var progressBottomShadowSize = 0
     private var progressTopShadowSize = 0
+    private var progressDivisionSpace = 0 // progress division 的安全距离
     private var strokeBottomShadowColor = Color.TRANSPARENT
     private var strokeTopShadowColor = Color.TRANSPARENT
     private var labelColor = Color.WHITE
     private lateinit var sleepLayout: View
     private lateinit var wakeLayout: View
-    private var sleepAngle = 30.0
-    private var wakeAngle = 225.0
+    private var sleepAngle = 30.0 // 开始角度
+    private var wakeAngle = 225.0 // 结束角度
     private var draggingSleep = false
     private var draggingWake = false
     private val stepMinutes = 15
@@ -75,35 +74,48 @@ class SleepTimePicker @JvmOverloads constructor(
 //            invalidate()
 //        }
 
+    /**
+     * 弧度进度条的宽度
+     */
+    private val progressStrokeWidth: Float
+        get() = progressPaint.strokeWidth
+
+    /**
+     * 弧度背景的宽度
+     */
+    private val progressBgStrokeWidth: Float
+        get() = progressBackgroundPaint.strokeWidth
+
     fun getBedTime() = computeBedTime()
 
     fun getWakeTime() = computeWakeTime()
 
     fun setTime(bedTime: LocalTime, wakeTime: LocalTime) {
-        sleepAngle = Utils.minutesToAngle(bedTime.hour * 60 + bedTime.minute)
-        wakeAngle = Utils.minutesToAngle(wakeTime.hour * 60 + wakeTime.minute)
+        sleepAngle = minutesToAngle(bedTime.hour * 60 + bedTime.minute)
+        wakeAngle = minutesToAngle(wakeTime.hour * 60 + wakeTime.minute)
         invalidate()
         notifyChanges()
     }
 
-//    val progressStrokeWidth: Float
-//        get() = progressPaint.strokeWidth
-
-
     private fun init(context: Context, attrs: AttributeSet?) {
-
         divisionOffset = dp2px(DEFAULT_DIVISION_OFFSET_DP)
         divisionLength = dp2px(DEFAULT_DIVISION_LENGTH_DP)
         divisionWidth = dp2px(DEFAULT_DIVISION_WIDTH_DP)
+        progressDivisionWidth = dp2px(DEFAULT_DIVISION_WIDTH_DP)
         labelOffset = dp2px(DEFAULT_LABEL_OFFSET_DP)
+        progressDivisionSpace = dp2px(DEFAULT_PROGRESS_DIVISION_SPACE_DP)
         var progressColor = Color.WHITE
         var progressBackgroundColor = Color.parseColor(DEFAULT_PROGRESS_BACKGROUND_COLOR)
         var divisionColor = Color.parseColor(DEFAULT_PROGRESS_BACKGROUND_COLOR)
+        var progressDivisionColor = Color.parseColor(DEFAULT_PROGRESS_BACKGROUND_COLOR)
         var progressStrokeWidth = dp2px(DEFAULT_STROKE_WIDTH_DP)
         var progressBgStrokeWidth = dp2px(DEFAULT_STROKE_WIDTH_DP)
         var progressStrokeCap: Paint.Cap = Paint.Cap.ROUND
         var sleepLayoutId = 0
         var wakeLayoutId = 0
+        var divisionAlpha = DEFAULT_DIVISION_ALPHA
+        var progressDivisionAlpha = DEFAULT_DIVISION_ALPHA
+
 
         if (attrs != null) {
             val a = context.obtainStyledAttributes(attrs, R.styleable.SleepTimePicker)
@@ -115,15 +127,19 @@ class SleepTimePicker @JvmOverloads constructor(
             progressBackgroundColor =
                 a.getColor(R.styleable.SleepTimePicker_progressBackgroundColor, progressBackgroundColor)
             divisionColor = a.getColor(R.styleable.SleepTimePicker_divisionColor, divisionColor)
+            divisionAlpha = a.getColor(R.styleable.SleepTimePicker_divisionAlpha, divisionAlpha)
+            progressDivisionColor = a.getColor(R.styleable.SleepTimePicker_progressDivisionColor, progressDivisionColor)
+            progressDivisionAlpha = a.getColor(R.styleable.SleepTimePicker_progressDivisionAlpha, progressDivisionAlpha)
             progressStrokeWidth =
                 a.getDimensionPixelSize(R.styleable.SleepTimePicker_progressStrokeWidth, progressStrokeWidth)
             progressBottomShadowSize = a.getDimensionPixelSize(R.styleable.SleepTimePicker_strokeBottomShadowRadius, 0)
             progressTopShadowSize = a.getDimensionPixelSize(R.styleable.SleepTimePicker_strokeTopShadowRadius, 0)
+            progressDivisionSpace = a.getDimensionPixelSize(R.styleable.SleepTimePicker_progressDivisionSpace, dp2px(
+                DEFAULT_PROGRESS_DIVISION_SPACE_DP))
             progressBgStrokeWidth =
                 a.getDimensionPixelSize(R.styleable.SleepTimePicker_progressBgStrokeWidth, progressStrokeWidth)
             strokeBottomShadowColor = a.getColor(R.styleable.SleepTimePicker_strokeBottomShadowColor, progressColor)
             strokeTopShadowColor = a.getColor(R.styleable.SleepTimePicker_strokeTopShadowColor, progressColor)
-            labelColor = a.getColor(R.styleable.SleepTimePicker_labelColor, progressColor)
             labelColor = a.getColor(R.styleable.SleepTimePicker_labelColor, progressColor)
 
             progressStrokeCap = Paint.Cap.ROUND
@@ -172,6 +188,15 @@ class SleepTimePicker @JvmOverloads constructor(
         divisionPaint.color = divisionColor
         divisionPaint.style = Paint.Style.STROKE
         divisionPaint.isAntiAlias = true
+        divisionPaint.alpha = divisionAlpha
+
+        progressDivisionPaint = Paint(0)
+        progressDivisionPaint.strokeCap = Paint.Cap.BUTT
+        progressDivisionPaint.strokeWidth = progressDivisionWidth.toFloat()
+        progressDivisionPaint.color = progressDivisionColor
+        progressDivisionPaint.style = Paint.Style.STROKE
+        progressDivisionPaint.isAntiAlias = true
+        progressDivisionPaint.alpha = progressDivisionAlpha
 
         textPaint = Paint()
         textPaint.textSize = TypedValue.applyDimension(
@@ -263,6 +288,7 @@ class SleepTimePicker @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         drawProgressBackground(canvas) // progress 的背景颜色
         drawProgress(canvas) // progress 进度条
+        drawProgressDivisions(canvas) // 进度条上的分隔条
         drawDivisions(canvas) // 画刻度
     }
 
@@ -339,7 +365,7 @@ class SleepTimePicker @JvmOverloads constructor(
 
     private fun drawProgress(canvas: Canvas) {
         val startAngle = -sleepAngle.toFloat()
-        val sweep = Utils.to_0_360(sleepAngle - wakeAngle).toFloat() // 计算弧度
+        val sweep = to_0_360(sleepAngle - wakeAngle).toFloat() // 计算弧度
         progressBottomBlurPaint?.let {
             canvas.drawArc(circleBounds, startAngle, sweep, false, it)
         }
@@ -349,20 +375,62 @@ class SleepTimePicker @JvmOverloads constructor(
         canvas.drawArc(circleBounds, startAngle, sweep, false, progressPaint)
     }
 
+    private fun drawProgressDivisions(canvas: Canvas) {
+        val startAngle = -sleepAngle + progressDivisionSpace
+        val endAngle = -wakeAngle - progressDivisionSpace
+        val betweenAngles = to_0_360(endAngle - startAngle).toFloat() // 计算弧度
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "drawProgressDivisions startAngle=$startAngle, endAngle=$endAngle betweenAngles=$betweenAngles")
+        }
+        val count: Int = (betweenAngles / 2).roundToInt()
+        val subDivisionLength = progressStrokeWidth / 3
+        val distance = radius + subDivisionLength / 2
+        var currentAngel = startAngle
+        for (index in 0..count) {
+            val angle = currentAngel
+            val radians = Math.toRadians(angle)
+            val startX = center.x + distance * cos(radians)
+            val endX = center.x + (distance - subDivisionLength) * cos(radians)
+            val startY = center.y + distance * sin(radians)
+            val endY = center.y + (distance - subDivisionLength) * sin(radians)
+            canvas.drawLine(startX.toFloat(), startY.toFloat(), endX.toFloat(), endY.toFloat(), progressDivisionPaint)
+            currentAngel += 2
+        }
+    }
+
     private fun drawDivisions(canvas: Canvas) {
-        val divisionAngle = 360 / hourLabels.size
+        val divisionAngle: Int = 360 / hourLabels.size
         hourLabels.forEachIndexed { index, value ->
-            val angle = (divisionAngle * index) - 90
-            val radians = Math.toRadians(angle.toDouble())
             val bgStrokeWidth = progressBackgroundPaint.strokeWidth
-            val startX = center.x + (radius - bgStrokeWidth / 2 - divisionOffset) * cos(radians)
-            val endX = center.x + (radius - bgStrokeWidth / 2 - divisionOffset - divisionLength) * cos(radians)
-            val startY = center.y + (radius - bgStrokeWidth / 2 - divisionOffset) * sin(radians)
-            val endY = center.y + (radius - bgStrokeWidth / 2 - divisionOffset - divisionLength) * sin(radians)
+            val distance = radius - bgStrokeWidth / 2 - divisionOffset
+
+            val angle = (divisionAngle * index) - 90 // 当时的角度
+            val radians = Math.toRadians(angle.toDouble())
+            val startX = center.x + distance * cos(radians)
+            val endX = center.x + (distance - divisionLength) * cos(radians)
+            val startY = center.y + distance * sin(radians)
+            val endY = center.y + (distance - divisionLength) * sin(radians)
             canvas.drawLine(startX.toFloat(), startY.toFloat(), endX.toFloat(), endY.toFloat(), divisionPaint)
 
-            // 画剩下的两个刻度
+            val subDivisionLength = divisionLength / 2
 
+            // 画剩下的两个刻度
+            val angle1 = angle - 10
+            val radians1 = Math.toRadians(angle1.toDouble())
+            val startX1 = center.x + distance * cos(radians1)
+            val endX1 = center.x + (distance - subDivisionLength) * cos(radians1)
+            val startY1 = center.y + distance * sin(radians1)
+            val endY1 = center.y + (distance - subDivisionLength) * sin(radians1)
+            canvas.drawLine(startX1.toFloat(), startY1.toFloat(), endX1.toFloat(), endY1.toFloat(), divisionPaint)
+
+            // 画剩下的两个刻度
+            val angle2 = angle - 20
+            val radians2 = Math.toRadians(angle2.toDouble())
+            val startX2 = center.x + distance * cos(radians2)
+            val endX2 = center.x + (distance - subDivisionLength) * cos(radians2)
+            val startY2 = center.y + distance * sin(radians2)
+            val endY2 = center.y + (distance - subDivisionLength) * sin(radians2)
+            canvas.drawLine(startX2.toFloat(), startY2.toFloat(), endX2.toFloat(), endY2.toFloat(), divisionPaint)
 
             val tmp = value.toString()
             textPaint.getTextBounds(tmp, 0, tmp.length, textRect)
@@ -377,6 +445,55 @@ class SleepTimePicker @JvmOverloads constructor(
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, metrics).toInt()
     }
 
+    fun to_0_360(angle: Double): Double {
+        var result = angle % 360
+        if (result < 0) result += 360
+        return result
+    }
+
+    fun to_0_720(angle: Double): Double {
+        var result = angle % 720
+        if (result < 0) result += 720
+        return result
+    }
+
+    fun minutesToAngle(mins: Int): Double {
+        return to_0_720(90 - (mins / (12 * 60.0)) * 360.0)
+    }
+
+    fun angleToMins(angle: Double): Int {
+        return (((to_0_720(90 - angle)) / 360) * 12 * 60).toInt()
+    }
+
+    /**
+    @param angle1 - first angle in radians
+    @param angle2 - second angle in radians
+    @return angle between vectors in radians
+     **/
+    fun angleBetweenVectors(angle1: Double, angle2: Double): Double {
+        val x1 = cos(angle1)
+        val y1 = sin(angle1)
+        val x2 = cos(angle2)
+        val y2 = sin(angle2)
+        return vectorsAngleRad(x1, y1, x2, y2)
+    }
+
+    private fun cross(x1: Double, y1: Double, x2: Double, y2: Double): Double {
+        return (x1 * y2 - y1 * x2)
+    }
+
+    private fun dot(x1: Double, y1: Double, x2: Double, y2: Double): Double {
+        return (x1 * x2 + y1 * y2)
+    }
+
+    fun vectorsAngleRad(x1: Double, y1: Double, x2: Double, y2: Double): Double {
+        return atan2(cross(x1, y1, x2, y2), dot(x1, y1, x2, y2))
+    }
+
+    fun snapMinutes(minutes: Int, step: Int): Int {
+        return (minutes / step) * step + (2 * (minutes % step) / step) * step
+    }
+
     companion object {
         private const val TAG = "SleepTimePicker"
         private const val ANGLE_START_PROGRESS_BACKGROUND = 0
@@ -386,6 +503,8 @@ class SleepTimePicker @JvmOverloads constructor(
         private const val DEFAULT_DIVISION_OFFSET_DP = 2F
         private const val DEFAULT_LABEL_OFFSET_DP = 18F
         private const val DEFAULT_DIVISION_WIDTH_DP = 2F
+        private const val DEFAULT_DIVISION_ALPHA = 255
+        private const val DEFAULT_PROGRESS_DIVISION_SPACE_DP = 3F // progress division 到开头的安全距离
         private const val SCALE_LABEL_TEXT_SIZE = 8F
         private const val DEFAULT_PROGRESS_BACKGROUND_COLOR = "#e0e0e0"
         private const val BLUR_STROKE_RATIO = 3 / 8F

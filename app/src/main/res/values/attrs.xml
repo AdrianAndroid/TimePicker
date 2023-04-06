@@ -1,21 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="SleepTimePicker">
-
+        <!--进度条的颜色-->
         <attr name="progressColor" format="color" />
+        <!--整个进度条背景的颜色-->
         <attr name="progressBackgroundColor" format="color" />
-        <attr name="divisionColor" format="color" />
+        <!--进度条上刻度的颜色-->
+        <attr name="progressDivisionColor" format="color" />
+        <!--进度条上刻度的透明度 0-255-->
+        <attr name="progressDivisionAlpha" format="integer" />
+        <!--进度条的宽度-->
         <attr name="progressStrokeWidth" format="dimension" />
+        <!--进度条背景的宽度-->
         <attr name="progressBgStrokeWidth" format="dimension" />
+        <!--进度条刻度到起始位置的安全距离-->
+        <attr name="progressDivisionSpace" format="dimension" />
+
+        <!--表盘的刻度颜色-->
+        <attr name="divisionColor" format="color" />
+        <!--表盘刻度的透明度 0-255-->
+        <attr name="divisionAlpha" format="integer" />
+        <!--背景-->
         <attr name="strokeBottomShadowRadius" format="dimension" />
         <attr name="strokeTopShadowRadius" format="dimension" />
         <attr name="strokeBottomShadowColor" format="color" />
         <attr name="strokeTopShadowColor" format="color" />
+        <!--文字的颜色-->
         <attr name="labelColor" format="color" />
         <attr name="labelFont" format="reference" />
         <attr name="sleepLayoutId" format="reference" />
         <attr name="wakeLayoutId" format="reference" />
-
     </declare-styleable>
 
 </resources>
