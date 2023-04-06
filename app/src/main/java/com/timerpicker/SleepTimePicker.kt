@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.ColorInt
 import com.timerpicker.Utils.Companion.angleBetweenVectors
 import com.timerpicker.Utils.Companion.angleToMins
 import com.timerpicker.Utils.Companion.snapMinutes
@@ -60,21 +59,21 @@ class SleepTimePicker @JvmOverloads constructor(
 
     var listener: ((bedTime: LocalTime, wakeTime: LocalTime) -> Unit)? = null
 
-    var progressColor: Int
-        @ColorInt
-        get() = progressPaint.color
-        set(@ColorInt color) {
-            progressPaint.color = color
-            invalidate()
-        }
-
-    var progressBackgroundColor: Int
-        @ColorInt
-        get() = progressBackgroundPaint.color
-        set(@ColorInt color) {
-            progressBackgroundPaint.color = color
-            invalidate()
-        }
+//    var progressColor: Int
+//        @ColorInt
+//        get() = progressPaint.color
+//        set(@ColorInt color) {
+//            progressPaint.color = color
+//            invalidate()
+//        }
+//
+//    var progressBackgroundColor: Int
+//        @ColorInt
+//        get() = progressBackgroundPaint.color
+//        set(@ColorInt color) {
+//            progressBackgroundPaint.color = color
+//            invalidate()
+//        }
 
     fun getBedTime() = computeBedTime()
 
@@ -87,8 +86,8 @@ class SleepTimePicker @JvmOverloads constructor(
         notifyChanges()
     }
 
-    val progressStrokeWidth: Float
-        get() = progressPaint.strokeWidth
+//    val progressStrokeWidth: Float
+//        get() = progressPaint.strokeWidth
 
 
     private fun init(context: Context, attrs: AttributeSet?) {
@@ -264,7 +263,7 @@ class SleepTimePicker @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         drawProgressBackground(canvas) // progress 的背景颜色
         drawProgress(canvas) // progress 进度条
-        drawDivisions(canvas)
+        drawDivisions(canvas) // 画刻度
     }
 
     private fun notifyChanges() {
@@ -361,6 +360,9 @@ class SleepTimePicker @JvmOverloads constructor(
             val startY = center.y + (radius - bgStrokeWidth / 2 - divisionOffset) * sin(radians)
             val endY = center.y + (radius - bgStrokeWidth / 2 - divisionOffset - divisionLength) * sin(radians)
             canvas.drawLine(startX.toFloat(), startY.toFloat(), endX.toFloat(), endY.toFloat(), divisionPaint)
+
+            // 画剩下的两个刻度
+
 
             val tmp = value.toString()
             textPaint.getTextBounds(tmp, 0, tmp.length, textRect)
